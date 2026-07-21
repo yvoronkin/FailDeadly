@@ -1,3 +1,3 @@
 # FailDeadly hardware
-![[../staff/img/back.png]]
-![[../staff/img/front.png]]
+![](../staff/img/back.png)
+![](../staff/img/front.png)
