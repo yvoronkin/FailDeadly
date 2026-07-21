@@ -43,9 +43,12 @@ fp-info-cache
 *.kicad_prl
 
 
-
 # FreeCAD backup and temporary files
 *.FC.lock
 *.bak
 *.FCBak
 *.tmp
+
+#other
+.tangent
+.tangentfolder
