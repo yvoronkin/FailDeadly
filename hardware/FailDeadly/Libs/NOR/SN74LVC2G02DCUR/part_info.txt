@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=SN74LVC2G02DCUR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=8
+Version=6.1
+Released=2015-04-16 09:48:08
+Downloaded=2026-06-29 22:23:15
+3D=Y

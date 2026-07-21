@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AH180-WG-7
+D DIODES INC. - AH180-WG-7 - Hall Effect Sensor, Omnipolar, 1 mA, SC-59, 3 Pins, 2.5 V, 5.5 V
+K
+F https://www.diodes.com//assets/Datasheets/AH180.pdf
+$ENDCMP
+#
+#End Doc Library

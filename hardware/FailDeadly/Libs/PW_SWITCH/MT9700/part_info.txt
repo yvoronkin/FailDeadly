@@ -1,0 +1,9 @@
+Manufacturer=Aerosemi
+PartNumber=MT9700
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (5-Pin)
+PinCount=5
+Version=1.1
+Released=2020-05-08 08:50:56
+Downloaded=2026-06-29 10:31:19
+3D=Y

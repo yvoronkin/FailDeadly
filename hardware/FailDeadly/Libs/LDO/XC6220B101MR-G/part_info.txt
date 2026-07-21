@@ -1,0 +1,9 @@
+Manufacturer=Torex
+PartNumber=XC6220B101MR-G
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (5-Pin)
+PinCount=5
+Version=4.2
+Released=2017-12-19 20:03:43
+Downloaded=2026-06-29 12:02:19
+3D=Y

@@ -1,0 +1,9 @@
+Manufacturer=KLS Electronic
+PartNumber=KLS1-180B-W
+PartCategory=Connector
+PackageCategory=Other
+PinCount=6
+Version=1.4
+Released=2019-08-19 22:27:04
+Downloaded=2026-06-28 16:27:16
+3D=Y

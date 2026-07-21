@@ -1,0 +1,201 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "aac5375c-1544-4278-a2d9-0dc914ba8dcb")
+	(paper "A4")
+	(title_block
+		(title "Main")
+		(date "2026-07-20")
+		(rev "001")
+	)
+	(lib_symbols)
+	(wire
+		(pts
+			(xy 127 101.6) (xy 165.1 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "15e5a3f2-1729-4bf5-80e1-fd9a708a5322")
+	)
+	(wire
+		(pts
+			(xy 127 86.36) (xy 165.1 86.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7fb8b383-1ba9-4145-8f99-0e3073ce535e")
+	)
+	(wire
+		(pts
+			(xy 127 91.44) (xy 165.1 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f52c559c-ac3a-4976-b319-969a33958ad7")
+	)
+	(sheet
+		(at 50.8 63.5)
+		(size 76.2 63.5)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "9c2fd5b3-c1c5-4fa1-b909-63f9a1cf978d")
+		(property "Sheetname" "Power"
+			(at 50.8 62.7884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 50.8 127.5846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "ION_TO_ADC" output
+			(at 127 86.36 0)
+			(uuid "58ff676d-72e7-4555-bb30-95849ec38e7d")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "USB_PWR_SENSE" output
+			(at 127 91.44 0)
+			(uuid "3471e2e1-17eb-4bc2-80e6-aa75613a3152")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "TAMPER_STATE" output
+			(at 127 101.6 0)
+			(uuid "68c082d7-6162-4fba-8a91-ad7c6e5337b3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "FailDeadly"
+				(path "/aac5375c-1544-4278-a2d9-0dc914ba8dcb"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 165.1 63.5)
+		(size 76.2 63.5)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "d970ff3c-68c7-47f3-b255-448e4e8384fe")
+		(property "Sheetname" "MCU"
+			(at 165.1 62.7884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "MCU.kicad_sch"
+			(at 165.1 127.5846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "ION_TO_ADC" input
+			(at 165.1 86.36 180)
+			(uuid "1d89d636-eb89-4d1c-81b0-82db93f1300c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "USB_PWR_SENSE" input
+			(at 165.1 91.44 180)
+			(uuid "0a3980f6-33f2-49d3-913d-e721014f62da")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "TAMPER_STATE" input
+			(at 165.1 101.6 180)
+			(uuid "121df1e2-bab4-4097-bf85-f87a6c17ff2f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "FailDeadly"
+				(path "/aac5375c-1544-4278-a2d9-0dc914ba8dcb"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

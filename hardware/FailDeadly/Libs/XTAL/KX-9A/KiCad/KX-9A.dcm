@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP KX-9A
+D 7.680 ~ 300.0 MHz mode fundamental, 3rd overtone, 5th overtone operating temperature standard -20 ~ + 70C
+K
+F https://www.geyer-electronic.com/fileadmin/user_upload/frequenz/quartz/KX-9A/GEYER-KX-9A.pdf
+$ENDCMP
+#
+#End Doc Library

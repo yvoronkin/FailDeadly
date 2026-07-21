@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP XC6220B101MR-G
+D LDO Voltage Regulators
+K
+F https://www.torexsemi.com/file/xc6220/XC6220.pdf
+$ENDCMP
+#
+#End Doc Library

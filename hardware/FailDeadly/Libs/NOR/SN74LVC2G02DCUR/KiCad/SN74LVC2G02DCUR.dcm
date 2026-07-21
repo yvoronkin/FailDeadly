@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SN74LVC2G02DCUR
+D SN74LVC2G02DCUR, Logic Gate Dual 2 Input NOR, LVC, 32mA 1.65 to 5.5V 8-Pin VSSOP
+K
+F http://www.ti.com/lit/ds/symlink/sn74lvc2g02.pdf
+$ENDCMP
+#
+#End Doc Library

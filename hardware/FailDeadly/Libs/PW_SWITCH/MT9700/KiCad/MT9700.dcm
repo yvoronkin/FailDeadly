@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP MT9700
+D ic
+K
+F https://datasheet.lcsc.com/szlcsc/1809291208_XI-AN-Aerosemi-Tech-MT9700_C89855.pdf
+$ENDCMP
+#
+#End Doc Library

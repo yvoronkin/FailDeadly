@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SPX1117M3-L-1-5
+D LDO Regulator1.5V 800mA Low IQ SOT223 EXAR SPX1117M3-L-1-5, LDO Voltage Regulator, 800mA, 1.5 V +/-1%, 2.6  15 Vin, 3-Pin SOT-223
+K
+F https://componentsearchengine.com/Datasheets/1/SPX1117M3-L-1-5.pdf
+$ENDCMP
+#
+#End Doc Library

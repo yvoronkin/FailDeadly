@@ -1,0 +1,9 @@
+Manufacturer=Geyer
+PartNumber=KX-9A
+PartCategory=Crystal or Oscillator
+PackageCategory=Other
+PinCount=4
+Version=1.2
+Released=2022-04-14 11:12:34
+Downloaded=2026-06-28 15:28:32
+3D=Y
