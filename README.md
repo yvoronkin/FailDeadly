@@ -7,7 +7,7 @@ FailDeadly stores secrets such as the sign key in SRAM as long as the MCU has po
 
 To be able to keep secrets and reduce the number of maintenance events during power outages, FailDeadly has an Ionister to keep the SRAM powered.
 
-==Warning: == FailDeadly achives it goals by valuing confidentiality more than availability. Be aware.
+### ** _Warning:_ FailDeadly achives it goals by valuing confidentiality more than availability. Be aware.**
 
 Features:
 
@@ -27,7 +27,7 @@ Use cases:
 * Remote server attestation
 * Burn-out LUKS decryption keys
 
-![[staff/img/FailDeadly.png]]
+![](/staff/img/FailDeadly.png)
 
 ### TODO:
 - [x] Hardware design v1.0 rev 001 
