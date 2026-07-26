@@ -1,0 +1,28 @@
+{
+  "name": "FreeRTOS-Kernel-STM32F401",
+  "version": "11.1.0",
+  "build": {
+    "srcDir": "FreeRTOS-Kernel",
+    "includeDir" : "FreeRTOS-Kernel/include",
+    "srcFilter": [
+      "-<*>",
+
+      "+<tasks.c>",
+      "+<queue.c>",
+      "+<list.c>",
+      "+<timers.c>",
+      "+<event_groups.c>",
+      "+<stream_buffer.c>",
+
+      "+<portable/GCC/ARM_CM4F/port.c>",
+      "+<portable/MemMang/heap_4.c>"
+    ],
+    "flags": [
+      "-IFreeRTOS-Kernel/include",
+      "-IFreeRTOS-Kernel/portable/GCC/ARM_CM4F",
+      "-I../../include"
+    ]
+  },
+  "frameworks": "stm32cube",
+  "platforms": "ststm32"
+}
