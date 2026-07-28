@@ -7,7 +7,7 @@
 	(title_block
 		(title "MCU")
 		(date "2026-07-20")
-		(rev "001")
+		(rev "002")
 	)
 	(lib_symbols
 		(symbol "74xGxx:SN74LVC1G14DBV"
@@ -9654,7 +9654,7 @@
 				)
 			)
 		)
-		(property "Value" "KX-9A 24Mhz"
+		(property "Value" "KX-9A 25Mhz"
 			(at 181.61 85.09 0)
 			(show_name no)
 			(do_not_autoplace no)
