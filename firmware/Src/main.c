@@ -31,6 +31,7 @@
 #include "task.h"
 
 #include "fd_tasks.h"
+#include "fd_crypto.h"
 
 /* USER CODE END Includes */
 
@@ -90,6 +91,9 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+
+    // clocks initialized, now reset fd crypto storage
+    FDCryptoClear();
 
   /* USER CODE END SysInit */
 

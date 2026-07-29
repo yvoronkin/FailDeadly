@@ -1,3 +1,6 @@
 [submodule "firmware/lib/FreeRTOS-Kernel"]
 	path = firmware/lib/FreeRTOS/FreeRTOS-Kernel
 	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+[submodule "firmware/lib/MbedTLS/mbedtls"]
+	path = firmware/lib/MbedTLS/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git

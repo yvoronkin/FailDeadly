@@ -1,0 +1,15 @@
+{
+  "name": "MbedTLS",
+  "version": "4.1.1",
+  "description": "MbedTLS with TF-PSA-Crypto",
+  "build": {
+    "includeDir" : "mbedtls/include",
+    "srcFilter": [
+        "-<*>"
+    ],
+    "flags": [
+        "-Imbedtls/tf-psa-crypto/include",
+        "-Imbedtls/tf-pas-crypto/drivers/builtin/include"
+    ]
+  }
+}
