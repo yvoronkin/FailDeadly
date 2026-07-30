@@ -8,81 +8,93 @@
 
 #include "vcp_comm.h"
 
-uint8_t vcpInitialized = 0;
+struct vcp_data
+{
+    StaticSemaphore_t    StaticMutex;
+    StaticSemaphore_t    StaticSemaphore;
+    StaticStreamBuffer_t StaticBuffer;
 
-SemaphoreHandle_t   //vcpTransmitCompleteSemaphore,
-                    vcpStreamBufferSendMutex,
-                    vcpStreamBufferIsEmptySemaphore;
+    SemaphoreHandle_t   vcpStreamBufferSendMutex;
+    SemaphoreHandle_t   vcpStreamBufferIsEmptySemaphore;
+    StreamBufferHandle_t vcpTransmitStreamBuffer;
 
-StreamBufferHandle_t vcpTransmitStreamBuffer;
+    uint8_t vcpInitialized;
+    uint8_t buffer[VCP_DRV_BUFF_LEN + 1];
+};
 
-extern 
-USBD_HandleTypeDef hUsbDeviceFS;
+static
+struct vcp_data vcp_data
+__attribute__((aligned(2048)));
 
-USBD_CDC_HandleTypeDef *hcdc = NULL;
+const
+MemoryRegion_t vcp_data_region = {
+    &vcp_data,
+    sizeof(vcp_data),
+    portMPU_REGION_READ_WRITE | 
+    portMPU_REGION_PRIVILEGED_READ_WRITE | 
+    portMPU_REGION_EXECUTE_NEVER,
+};
 
 static 
 void vcpInit(void)
 {
-/*
-    vcpTransmitCompleteSemaphore = xSemaphoreCreateBinary();
-    if (vcpTransmitCompleteSemaphore == (SemaphoreHandle_t) NULL)
-    {
-        Error_Handler();
-    }
-*/
-
-    vcpTransmitStreamBuffer = xStreamBufferCreate(VCP_DRV_BUFF_LEN, 1);
-    if (vcpTransmitStreamBuffer == NULL)
+    vcp_data.vcpTransmitStreamBuffer = 
+        xStreamBufferCreateStatic(VCP_DRV_BUFF_LEN, 1, 
+                                  &vcp_data.buffer, &vcp_data.StaticBuffer);
+    if (vcp_data.vcpTransmitStreamBuffer == NULL)
     {
         Error_Handler();
     }
 
-    vcpStreamBufferSendMutex = xSemaphoreCreateMutex();
-    if (vcpStreamBufferSendMutex == (SemaphoreHandle_t) NULL)
+    vcp_data.vcpStreamBufferSendMutex = 
+        xSemaphoreCreateMutexStatic(&vcp_data.StaticMutex);
+    if (vcp_data.vcpStreamBufferSendMutex == (SemaphoreHandle_t)NULL)
     {
         Error_Handler();
     }
 
-    vcpStreamBufferIsEmptySemaphore = xSemaphoreCreateBinary();
-    if (vcpStreamBufferIsEmptySemaphore == (SemaphoreHandle_t) NULL)
+    vcp_data.vcpStreamBufferIsEmptySemaphore = 
+        xSemaphoreCreateBinaryStatic(&vcp_data.StaticSemaphore);
+    if (vcp_data.vcpStreamBufferIsEmptySemaphore == (SemaphoreHandle_t) NULL)
     {
         Error_Handler();
     }
-    
-    while (hcdc == NULL)
-    {
-        hcdc = (USBD_CDC_HandleTypeDef *)hUsbDeviceFS.pClassData;
-        vTaskDelay(1);
-    }
 
-    // Allow FreeRTOS API calls within the ISR
-    NVIC_SetPriority(OTG_FS_IRQn, 6);
-
-    vcpInitialized = 1;
+    vcp_data.vcpInitialized = 1;
+    return;
 }
+
+extern 
+USBD_HandleTypeDef hUsbDeviceFS;
 
 void VCPTransmitTask(void * arg)
 {
     int32_t ret;
     uint16_t numBytes;
     static uint8_t tempBuffer[VCP_DRV_BUFF_LEN];
+    USBD_CDC_HandleTypeDef *hcdc = NULL;
 
     (void)arg;
-    vcpInitialized = 0;
+    vcp_data.vcpInitialized = 0;
     vcpInit();
+
+    while (hcdc == NULL)
+    {
+        hcdc = (USBD_CDC_HandleTypeDef *)hUsbDeviceFS.pClassData;
+        vTaskDelay(1);
+    }
 
     while (1)
     {
         // Wait forever for data to become available in the stream-buffer
         numBytes = (uint16_t)xStreamBufferReceive(
-                                vcpTransmitStreamBuffer, tempBuffer,
+                                vcp_data.vcpTransmitStreamBuffer, tempBuffer,
                                 VCP_DRV_BUFF_LEN, portMAX_DELAY);
 
-        ret = (int32_t)uxSemaphoreGetCount(vcpStreamBufferIsEmptySemaphore);
+        ret = (int32_t)uxSemaphoreGetCount(vcp_data.vcpStreamBufferIsEmptySemaphore);
         if (ret == 0)
         {
-            ret = xSemaphoreGive(vcpStreamBufferIsEmptySemaphore);
+            ret = xSemaphoreGive(vcp_data.vcpStreamBufferIsEmptySemaphore);
         }
 
         // Transmit the data
@@ -96,6 +108,33 @@ void VCPTransmitTask(void * arg)
     }
 }
 
+#define VCP_STACK_DEPTH 128
+
+static 
+portSTACK_TYPE xTaskStack[ VCP_STACK_DEPTH ] 
+__attribute__((aligned(VCP_STACK_DEPTH*4)));
+
+void VCPTransmitTaskInit(void)
+{
+    BaseType_t res;
+
+    const
+    TaskParameters_t task_params = {
+        VCPTransmitTask,
+        "VCP comm",
+        VCP_STACK_DEPTH,
+        NULL,
+        6 | portPRIVILEGE_BIT,
+        xTaskStack,
+        {
+            { 0 },
+        }
+    };
+
+    res = xTaskCreateRestricted(&task_params, NULL);
+    if (res != pdPASS) Error_Handler();
+}
+
 int32_t vcpSend(const char * buf, uint16_t len)
 {
     int32_t ret; 
@@ -104,14 +143,14 @@ int32_t vcpSend(const char * buf, uint16_t len)
     TickType_t start_tick_count, cur_tick_count, 
                elapsed_tick_count, remaining_tick_count;
     
-    while (vcpInitialized == 0)
+    while (vcp_data.vcpInitialized == 0)
     {
         vTaskDelay(1);
     }
 
     start_tick_count = xTaskGetTickCount();
     
-    if (xSemaphoreTake(vcpStreamBufferSendMutex, portMAX_DELAY) == pdPASS)
+    if (xSemaphoreTake(vcp_data.vcpStreamBufferSendMutex, portMAX_DELAY) == pdPASS)
     {
         cur_tick_count = xTaskGetTickCount();
 
@@ -127,19 +166,19 @@ int32_t vcpSend(const char * buf, uint16_t len)
         }
 
         // buff is empty
-        if ((int32_t)uxSemaphoreGetCount(vcpStreamBufferIsEmptySemaphore) == 1) 
+        if ((int32_t)uxSemaphoreGetCount(vcp_data.vcpStreamBufferIsEmptySemaphore) == 1) 
         {
             // reset state
-            xSemaphoreTake(vcpStreamBufferIsEmptySemaphore, 0);
+            xSemaphoreTake(vcp_data.vcpStreamBufferIsEmptySemaphore, 0);
         }
         
         // get size available in buffer
-        bytes_available = xStreamBufferSpacesAvailable(vcpTransmitStreamBuffer);
+        bytes_available = xStreamBufferSpacesAvailable(vcp_data.vcpTransmitStreamBuffer);
 
         // if there is some waiting-time remaining wait until buffer will be emptied
         if ((bytes_available < len) && (remaining_tick_count > 0))
         {
-            if (xSemaphoreTake(vcpStreamBufferIsEmptySemaphore, 
+            if (xSemaphoreTake(vcp_data.vcpStreamBufferIsEmptySemaphore, 
                                remaining_tick_count) == pdPASS)
             {
                 bytes_available = VCP_DRV_BUFF_LEN;
@@ -148,13 +187,13 @@ int32_t vcpSend(const char * buf, uint16_t len)
 
         if (bytes_available >= len)
         {
-            ret = xStreamBufferSend(vcpTransmitStreamBuffer, buf, len, 0);
+            ret = xStreamBufferSend(vcp_data.vcpTransmitStreamBuffer, buf, len, 0);
         }
         else // not enough space, return error
         {
             ret = -1;
         }
-        xSemaphoreGive(vcpStreamBufferSendMutex);
+        xSemaphoreGive(vcp_data.vcpStreamBufferSendMutex);
     }
     else
     {

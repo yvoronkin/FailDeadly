@@ -65,6 +65,22 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+extern uint32_t __privileged_data_load_start__;
+extern uint32_t __privileged_data_start__;
+extern uint32_t __privileged_data_actual_end__;
+
+static void InitPrivilegedData(void)
+{
+    const uint32_t *src = &__privileged_data_load_start__;
+    uint32_t *dst = &__privileged_data_start__;
+    const uint32_t *end = &__privileged_data_actual_end__;
+
+    while (dst < end)
+    {
+        *dst++ = *src++;
+    }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -75,7 +91,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+    InitPrivilegedData();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/

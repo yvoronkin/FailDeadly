@@ -4,8 +4,7 @@
 #define VCP_DRV_BUFF_LEN 1024
 #define VCP_DRV_SEND_MAX_WAIT 1000
 
-
-void VCPTransmitTask(void * arg);
+void VCPTransmitTaskInit(void); 
 int32_t vcpSend(const char * buf, uint16_t len);
 
 

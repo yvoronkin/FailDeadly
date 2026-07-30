@@ -14,7 +14,7 @@ extern uint32_t SystemCoreClock;
 #define configMAX_PRIORITIES                            8
 #define configMINIMAL_STACK_SIZE                        ((uint16_t)128)
 #define configMAX_TASK_NAME_LEN                         16
-#define configTOTAL_HEAP_SIZE                           ((size_t)(32 * 1024))
+#define configTOTAL_HEAP_SIZE                           ((size_t)(6u * 1024))
 
 #define configUSE_16_BIT_TICKS                          0
 #define configIDLE_SHOULD_YIELD                         1
@@ -45,7 +45,15 @@ extern uint32_t SystemCoreClock;
 #define configUSE_STATS_FORMATTING_FUNCTIONS            0
 
 #define configENABLE_FPU                                1
-#define configENABLE_MPU                                0
+
+#define configENABLE_MPU                                1
+#define configENFORCE_SYSTEM_CALLS_FROM_KERNEL_ONLY     0
+#define configALLOW_UNPRIVILEGED_CRITICAL_SECTIONS      0
+#define configUSE_MPU_WRAPPERS_V1                       0
+#define configPROTECTED_KERNEL_OBJECT_POOL_SIZE         32
+#define configSYSTEM_CALL_STACK_SIZE                    configMINIMAL_STACK_SIZE
+#define configENABEL_ACCESS_CONTROL_LIST                1
+
 
 /* STM32F4 implements four priority bits. */
 #define configPRIO_BITS                                 4
