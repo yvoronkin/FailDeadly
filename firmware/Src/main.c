@@ -143,6 +143,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
+    assert_storage_reset();
     FDSendLog(banner, strlen((const char *)banner), 0, 0);
     FDSendLog(gone4good_msg, strlen((const char *)gone4good_msg), 0, 0);
 
@@ -282,5 +283,13 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
 
+    /* Can't get rid of it if I want to regen some code through stm32pio. */
+    app_assert_failed(file, line);
+
+  /* USER CODE END 6 */
+}
 #endif /* USE_FULL_ASSERT */

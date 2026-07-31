@@ -7,7 +7,9 @@ extern "C" {
 
 #ifdef USE_FULL_ASSERT
 
+void assert_storage_reset(void);
 void assert_failed(uint8_t *file, uint32_t line);
+void app_assert_failed(uint8_t *file, uint32_t line);
 
 #endif /* USE_FULL_ASSERT */
 
