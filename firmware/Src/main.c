@@ -20,6 +20,7 @@
 #include "main.h"
 #include "adc.h"
 #include "crc.h"
+#include "dma.h"
 #include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
@@ -32,6 +33,8 @@
 
 #include "fd_tasks.h"
 #include "fd_crypto.h"
+#include "fd_log.h"
+#include "stm32_assert.h"
 
 /* USER CODE END Includes */
 
@@ -53,6 +56,24 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+static const 
+unsigned char banner[] = 
+    " ███████████            ███  ████  ██████████                          █████ ████            \r\n" 
+    "▒▒███▒▒▒▒▒▒█           ▒▒▒  ▒▒███ ▒▒███▒▒▒▒███                        ▒▒███ ▒▒███            \r\n" 
+    " ▒███   █ ▒   ██████   ████  ▒███  ▒███   ▒▒███  ██████   ██████    ███████  ▒███  █████ ████\r\n"
+    " ▒███████    ▒▒▒▒▒███ ▒▒███  ▒███  ▒███    ▒███ ███▒▒███ ▒▒▒▒▒███  ███▒▒███  ▒███ ▒▒███ ▒███ \r\n" 
+    " ▒███▒▒▒█     ███████  ▒███  ▒███  ▒███    ▒███▒███████   ███████ ▒███ ▒███  ▒███  ▒███ ▒███ \r\n" 
+    " ▒███  ▒     ███▒▒███  ▒███  ▒███  ▒███    ███ ▒███▒▒▒   ███▒▒███ ▒███ ▒███  ▒███  ▒███ ▒███ \r\n" 
+    " █████      ▒▒████████ █████ █████ ██████████  ▒▒██████ ▒▒████████▒▒████████ █████ ▒▒███████ \r\n" 
+    "▒▒▒▒▒        ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒███ \r\n" 
+    "                                                                                    ███ ▒███ \r\n" 
+    "                                                                                   ▒▒██████  \r\n" 
+    "                                                                                    ▒▒▒▒▒▒   \r\n" 
+    "\0";
+
+static const 
+unsigned char gone4good_msg[] = "\r\nAt this point, crypto keys are gone for good.\r\n\0";
 
 /* USER CODE END PV */
 
@@ -115,15 +136,21 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
   MX_USART1_UART_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-    FDTasksInit();
+    FDSendLog(banner, strlen((const char *)banner), 0, 0);
+    FDSendLog(gone4good_msg, strlen((const char *)gone4good_msg), 0, 0);
 
+    FDTasksInit();
     vTaskStartScheduler();
+
+    // should never reach this part
+    assert_param(0 == 1);
 
   /* USER CODE END 2 */
 
@@ -255,11 +282,5 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t *file, uint32_t line)
-{
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
-}
+
 #endif /* USE_FULL_ASSERT */

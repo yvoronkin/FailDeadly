@@ -5,6 +5,7 @@
 
 #include "test_task.h"
 #include "vcp_comm.h"
+#include "fd_log.h"
 
 void BlinkTestTask(void *arg)
 {
@@ -13,7 +14,7 @@ void BlinkTestTask(void *arg)
 
     (void)arg;
     for (;;) {
-        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+        HAL_GPIO_TogglePin(GPIOC, debug_led_Pin);
         vcpSend(msg, 12); 
         vTaskDelay(pdMS_TO_TICKS(500));
     }
@@ -24,6 +25,8 @@ portSTACK_TYPE xTaskStack[ 128 ]
 __attribute__((aligned(128*4)));
 
 
+extern const
+MemoryRegion_t log_data_region;
 extern const
 MemoryRegion_t vcp_data_region;
 
@@ -44,5 +47,5 @@ void BlinkTestTaskInit(void)
 
     BaseType_t res = xTaskCreateRestricted(&blink_param, NULL);
 
-    if (res != pdPASS) Error_Handler();
+    assert_param(res == pdPASS);
 }

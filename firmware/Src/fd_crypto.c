@@ -87,8 +87,5 @@ void FDCryptoTaskInit(void)
     };
 
     res = xTaskCreateRestricted(&param, NULL);
-    if (res != pdPASS)
-    {
-        Error_Handler();
-    }
+    assert_param(res == pdPASS);
 }

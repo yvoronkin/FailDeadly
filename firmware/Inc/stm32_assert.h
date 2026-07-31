@@ -1,0 +1,18 @@
+#ifndef STM32_ASSERT_H
+#define STM32_ASSERT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef USE_FULL_ASSERT
+
+void assert_failed(uint8_t *file, uint32_t line);
+
+#endif /* USE_FULL_ASSERT */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* STM32_ASSERT_H */

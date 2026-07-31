@@ -6,6 +6,7 @@
 #include "stream_buffer.h"
 #include "semphr.h"
 
+#include "macros.h"
 #include "vcp_comm.h"
 
 struct vcp_data
@@ -24,7 +25,7 @@ struct vcp_data
 
 static
 struct vcp_data vcp_data
-__attribute__((aligned(2048)));
+__attribute__((aligned(ROUND_UP_POW2(sizeof(struct vcp_data)))));
 
 const
 MemoryRegion_t vcp_data_region = {
@@ -40,7 +41,7 @@ void vcpInit(void)
 {
     vcp_data.vcpTransmitStreamBuffer = 
         xStreamBufferCreateStatic(VCP_DRV_BUFF_LEN, 1, 
-                                  &vcp_data.buffer, &vcp_data.StaticBuffer);
+                                  vcp_data.buffer, &vcp_data.StaticBuffer);
     if (vcp_data.vcpTransmitStreamBuffer == NULL)
     {
         Error_Handler();
@@ -108,11 +109,16 @@ void VCPTransmitTask(void * arg)
     }
 }
 
-#define VCP_STACK_DEPTH 128
+#define VCP_STACK_DEPTH 128 + (VCP_DRV_BUFF_LEN / 4)
+#define VCP_STACK_ALIGN ROUND_UP_POW2((VCP_STACK_DEPTH * 4))
+
+#if (VCP_STACK_ALIGN > 2048)
+#warn "VCP Stack take a lot of MPU region"
+#endif
 
 static 
 portSTACK_TYPE xTaskStack[ VCP_STACK_DEPTH ] 
-__attribute__((aligned(VCP_STACK_DEPTH*4)));
+__attribute__((aligned(VCP_STACK_ALIGN)));
 
 void VCPTransmitTaskInit(void)
 {
@@ -132,7 +138,7 @@ void VCPTransmitTaskInit(void)
     };
 
     res = xTaskCreateRestricted(&task_params, NULL);
-    if (res != pdPASS) Error_Handler();
+    assert_param(res == pdPASS);
 }
 
 int32_t vcpSend(const char * buf, uint16_t len)
@@ -150,20 +156,20 @@ int32_t vcpSend(const char * buf, uint16_t len)
 
     start_tick_count = xTaskGetTickCount();
     
-    if (xSemaphoreTake(vcp_data.vcpStreamBufferSendMutex, portMAX_DELAY) == pdPASS)
+    if (xSemaphoreTake(vcp_data.vcpStreamBufferSendMutex, VCP_DRV_SEND_MAX_WAIT) == pdPASS)
     {
         cur_tick_count = xTaskGetTickCount();
 
-        // how long mutex take
+        // how long mutex taken
         if (cur_tick_count >= start_tick_count)
         {
             elapsed_tick_count = cur_tick_count - start_tick_count;
-            remaining_tick_count = VCP_DRV_SEND_MAX_WAIT - elapsed_tick_count;
         }
         else
         {
-            remaining_tick_count = 0;
+            elapsed_tick_count = (portMAX_DELAY - start_tick_count) + cur_tick_count + 1;
         }
+        remaining_tick_count = VCP_DRV_SEND_MAX_WAIT - elapsed_tick_count;
 
         // buff is empty
         if ((int32_t)uxSemaphoreGetCount(vcp_data.vcpStreamBufferIsEmptySemaphore) == 1) 
@@ -189,16 +195,12 @@ int32_t vcpSend(const char * buf, uint16_t len)
         {
             ret = xStreamBufferSend(vcp_data.vcpTransmitStreamBuffer, buf, len, 0);
         }
-        else // not enough space, return error
-        {
-            ret = -1;
-        }
+        // not enough space, return error
+        else ret = pdFAIL;
+
         xSemaphoreGive(vcp_data.vcpStreamBufferSendMutex);
     }
-    else
-    {
-        ret = -2;
-    }
+    else ret = -2;
 
     return ret;
 }
