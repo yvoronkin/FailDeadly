@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+void ConfigureRunTimeStatsTimer(void);
+uint32_t GetRunTimeStatsCounter(void);
+
 extern uint32_t SystemCoreClock;
 
 #define configUSE_PREEMPTION                             1
@@ -41,8 +44,13 @@ extern uint32_t SystemCoreClock;
 #define configSUPPORT_DYNAMIC_ALLOCATION                1
 
 #define configUSE_TRACE_FACILITY                        1
-#define configGENERATE_RUN_TIME_STATS                   0
+#define configGENERATE_RUN_TIME_STATS                   1
 #define configUSE_STATS_FORMATTING_FUNCTIONS            0
+
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() \
+    ConfigureRunTimeStatsTimer()
+#define portGET_RUN_TIME_COUNTER_VALUE() \
+    GetRunTimeStatsCounter()
 
 #define configENABLE_FPU                                1
 

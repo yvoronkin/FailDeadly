@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "dma.h"
 #include "usart.h"
 
@@ -133,7 +136,8 @@ void FDLogTask(void * arg)
     }
 }
 
-#define FDLOG_TASK_STACK_WORDS 128 + (LOG_BUFFER_LEN / 4)
+#define FDLOG_REQ_TASK_STACK_WORDS 128 + (LOG_BUFFER_LEN / 4)
+#define FDLOG_TASK_STACK_WORDS ROUND_UP_POW2(FDLOG_REQ_TASK_STACK_WORDS)
 #define FDLOG_TASK_STACK_ALIGN ROUND_UP_POW2(FDLOG_TASK_STACK_WORDS * 4)
 #if (FDLOG_TASK_STACK_ALIGN > 2048)
 #warn "FDLOG Stack take a lot of MPU region"
@@ -161,7 +165,7 @@ void FDLogTaskInit(void)
     };
 
     res = xTaskCreateRestricted(&task_params, NULL);
-    if (res != pdPASS) while(1) {};
+    assert_param(res == pdPASS);
 }
 
 extern UART_HandleTypeDef huart1;
@@ -254,23 +258,117 @@ int32_t FDSendLog(const unsigned char * buf, size_t len, int omit_rtos, int nobl
         {
             HAL_Delay(1); // Wait for ISR from USART1 DMA
         }
-
         ret = pdPASS;
     }
 
     return ret;
 }
 
-void FDLogFreeRTOSOnceTask(void)
+static const
+char delimeter[] =
+"+----------------+----------------+----------------+----------------+----------------+\r\n\0";
+
+static const
+char header[] = 
+"|   TASK NAME    |  TASK PRIORITY |  TIME ABS(ms)  |  TIME RELAT    |   STACK AVAIL  |\r\n\0";
+
+#define REPORTER_BUFFER_LEN 128
+#define NUM_TASKS_EXPECTED 10
+void FDLogFreeRTOSStateTask(void * arg)
 {
+    UBaseType_t numTasks, i;
+    TaskStatus_t pxTaskStatusArray[NUM_TASKS_EXPECTED];
+    unsigned long TotalRunTime, ulStatsAsPercentage;
+    char tempBuffer[REPORTER_BUFFER_LEN];
     
+    (void)arg;
+    while(1)
+    {
+        assert_param(FLAG_HAS(log_data.state, RTOS_INITIALIZED));
+
+        numTasks = uxTaskGetSystemState(pxTaskStatusArray, 
+                                        NUM_TASKS_EXPECTED,
+                                        &TotalRunTime);
+
+        sprintf(tempBuffer, "Total runtime: %lu ms\r\n", TotalRunTime);
+
+        // for percent calculation
+        TotalRunTime /= 100UL;
+
+        FDSendLog((const uint8_t *)tempBuffer, strlen(tempBuffer), 0, 0);
+        FDSendLog((const uint8_t *)delimeter, strlen(delimeter), 0, 0);
+        FDSendLog((const uint8_t *)header, strlen(header), 0, 0);
+        FDSendLog((const uint8_t *)delimeter, strlen(delimeter), 0, 0);
+        for ( i = 0; i < numTasks; i++)
+        {
+            ulStatsAsPercentage =
+              pxTaskStatusArray[i].ulRunTimeCounter / TotalRunTime;
+
+            if (ulStatsAsPercentage > 0UL)
+            {
+                sprintf(tempBuffer, "|%16s|%16lu|%16lu|%15lu%%|%16lu|\r\n",
+                           pxTaskStatusArray[i].pcTaskName,
+                           pxTaskStatusArray[i].uxBasePriority,
+                           pxTaskStatusArray[i].ulRunTimeCounter,
+                           ulStatsAsPercentage,
+                           pxTaskStatusArray[i].usStackHighWaterMark);
+            }
+            else
+            {
+                sprintf(tempBuffer, "|%16s|%16lu|%16lu|%16s|%16lu|\r\n",
+                           pxTaskStatusArray[i].pcTaskName,
+                           pxTaskStatusArray[i].uxBasePriority,
+                           pxTaskStatusArray[i].ulRunTimeCounter,
+                           "<1%",
+                           pxTaskStatusArray[i].usStackHighWaterMark);
+            }
+            FDSendLog((const uint8_t *)tempBuffer, strlen(tempBuffer), 0, 0);
+
+        }
+        FDSendLog((const uint8_t *)delimeter, strlen(delimeter), 0, 0);
+          
+        vTaskDelay(pdMS_TO_TICKS(60000U)); // ~1min
+    }
+}
+
+#define REPORTER_REQ_TASK_STACK_WORDS 256 + (REPORTER_BUFFER_LEN / 4)
+#define REPORTER_TASK_STACK_WORDS ROUND_UP_POW2(REPORTER_REQ_TASK_STACK_WORDS)
+#define REPORTER_TASK_STACK_ALIGN ROUND_UP_POW2(REPORTER_TASK_STACK_WORDS * 4)
+
+#if (REPORTER_TASK_STACK_ALIGN > 2048)
+#warn "FDLOG Stack take a lot of MPU region"
+#endif
+
+static
+portSTACK_TYPE RTOSStateReportStack[REPORTER_TASK_STACK_WORDS]
+__attribute__((aligned(REPORTER_TASK_STACK_ALIGN)));
+
+void FDLogFreeRTOSStateInit(void)
+{
+    BaseType_t res;
+
+    const
+    TaskParameters_t task_params = {
+        FDLogFreeRTOSStateTask,
+        "Tasks report",
+        REPORTER_TASK_STACK_WORDS,
+        NULL,
+        (tskIDLE_PRIORITY + 2U) | portPRIVILEGE_BIT, // since no user data processed
+        RTOSStateReportStack,
+        {
+            { 0 },
+        }
+    };
+
+    res = xTaskCreateRestricted(&task_params, NULL);
+    assert_param(res == pdPASS);
 }
 
 #else
 
 void FDSendLog(const char * buf, size_t len, int omit_rtos, int noblock) {}
 void FDLogTaskInit(void) {}
-void FDLogFreeRTOSOnceTask(void) {}
+void FDLogFreeRTOSStateInit(void) {}
 
 #endif
 

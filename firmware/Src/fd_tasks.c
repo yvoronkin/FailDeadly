@@ -17,5 +17,7 @@ void FDTasksInit(void)
     BlinkTestTaskInit();
     FDCryptoTaskInit();
 
+    FDLogFreeRTOSStateInit();
+
     return;
 }

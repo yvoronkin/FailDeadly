@@ -69,6 +69,9 @@ void FDCryptoTask(void * arg)
     }
 }
 
+extern
+MemoryRegion_t log_data_region;
+
 void FDCryptoTaskInit(void)
 {
     BaseType_t res;
@@ -83,6 +86,8 @@ void FDCryptoTaskInit(void)
         crypto_task_stack,
         {
             keys,
+            log_data_region,
+
         },
     };
 
