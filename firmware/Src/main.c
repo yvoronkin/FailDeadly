@@ -36,6 +36,7 @@
 #include "fd_crypto.h"
 #include "fd_log.h"
 #include "stm32_assert.h"
+#include "uptime.h"
 
 /* USER CODE END Includes */
 
@@ -60,17 +61,17 @@
 
 static const 
 unsigned char banner[] = 
-    " ███████████            ███  ████  ██████████                          █████ ████            \r\n" 
-    "▒▒███▒▒▒▒▒▒█           ▒▒▒  ▒▒███ ▒▒███▒▒▒▒███                        ▒▒███ ▒▒███            \r\n" 
-    " ▒███   █ ▒   ██████   ████  ▒███  ▒███   ▒▒███  ██████   ██████    ███████  ▒███  █████ ████\r\n"
-    " ▒███████    ▒▒▒▒▒███ ▒▒███  ▒███  ▒███    ▒███ ███▒▒███ ▒▒▒▒▒███  ███▒▒███  ▒███ ▒▒███ ▒███ \r\n" 
-    " ▒███▒▒▒█     ███████  ▒███  ▒███  ▒███    ▒███▒███████   ███████ ▒███ ▒███  ▒███  ▒███ ▒███ \r\n" 
-    " ▒███  ▒     ███▒▒███  ▒███  ▒███  ▒███    ███ ▒███▒▒▒   ███▒▒███ ▒███ ▒███  ▒███  ▒███ ▒███ \r\n" 
-    " █████      ▒▒████████ █████ █████ ██████████  ▒▒██████ ▒▒████████▒▒████████ █████ ▒▒███████ \r\n" 
-    "▒▒▒▒▒        ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒███ \r\n" 
-    "                                                                                    ███ ▒███ \r\n" 
-    "                                                                                   ▒▒██████  \r\n" 
-    "                                                                                    ▒▒▒▒▒▒   \r\n" 
+    "  ███████████            ███  ████  ██████████                          █████ ████            \r\n" 
+    " ▒▒███▒▒▒▒▒▒█           ▒▒▒  ▒▒███ ▒▒███▒▒▒▒███                        ▒▒███ ▒▒███            \r\n" 
+    "  ▒███   █ ▒   ██████   ████  ▒███  ▒███   ▒▒███  ██████   ██████    ███████  ▒███  █████ ████\r\n"
+    "  ▒███████    ▒▒▒▒▒███ ▒▒███  ▒███  ▒███    ▒███ ███▒▒███ ▒▒▒▒▒███  ███▒▒███  ▒███ ▒▒███ ▒███ \r\n" 
+    "  ▒███▒▒▒█     ███████  ▒███  ▒███  ▒███    ▒███▒███████   ███████ ▒███ ▒███  ▒███  ▒███ ▒███ \r\n" 
+    "  ▒███  ▒     ███▒▒███  ▒███  ▒███  ▒███    ███ ▒███▒▒▒   ███▒▒███ ▒███ ▒███  ▒███  ▒███ ▒███ \r\n" 
+    "  █████      ▒▒████████ █████ █████ ██████████  ▒▒██████ ▒▒████████▒▒████████ █████ ▒▒███████ \r\n" 
+    " ▒▒▒▒▒        ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒███ \r\n" 
+    "                                                                                     ███ ▒███ \r\n" 
+    "                                                                                    ▒▒██████  \r\n" 
+    "                                                                                     ▒▒▒▒▒▒   \r\n" 
     "\0";
 
 static const 
@@ -133,6 +134,7 @@ int main(void)
     // clocks initialized, now reset fd crypto storage
     FDCryptoClear();
 
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -143,9 +145,11 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_DEVICE_Init();
   MX_TIM2_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
     assert_storage_reset();
+    uptime_data_reset();
     FDSendLog(banner, strlen((const char *)banner), 0, 0);
     FDSendLog(gone4good_msg, strlen((const char *)gone4good_msg), 0, 0);
 
@@ -260,7 +264,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+    if (htim->Instance == TIM4)
+    {
+        uptime_update_isr();
+    }
   /* USER CODE END Callback 1 */
 }
 

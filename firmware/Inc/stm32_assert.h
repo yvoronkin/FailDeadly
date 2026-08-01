@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #ifdef USE_FULL_ASSERT
 
 void assert_storage_reset(void);

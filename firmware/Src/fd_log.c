@@ -11,6 +11,7 @@
 
 #include "macros.h"
 #include "fd_log.h"
+#include "uptime.h"
 
 typedef
 enum log_state_flags
@@ -46,7 +47,7 @@ struct log_data log_data = {0}; // Init with zero
 struct log_data
 {
     log_state_flags state : 8;
-}
+};
 
 static
 __attribute__ ((aligned(2)))
@@ -62,6 +63,7 @@ MemoryRegion_t log_data_region = {
     portMPU_REGION_PRIVILEGED_READ_WRITE |
     portMPU_REGION_EXECUTE_NEVER,
 };
+
 
 #ifndef DISABLE_LOG_FUNC
 
@@ -245,6 +247,7 @@ int32_t FDSendLog(const unsigned char * buf, size_t len, int omit_rtos, int nobl
     }
     else // process with blocking 
     {
+        FLAG_SET(log_data.state, KEEP_BLOCKING);
         status = HAL_UART_Transmit_DMA(&huart1, buf, len); 
         if (status != HAL_OK)
         {
@@ -253,10 +256,9 @@ int32_t FDSendLog(const unsigned char * buf, size_t len, int omit_rtos, int nobl
         }
         if (noblock) return pdPASS;
         
-        FLAG_SET(log_data.state, KEEP_BLOCKING);
         while (FLAG_HAS(log_data.state, KEEP_BLOCKING))
         {
-            HAL_Delay(1); // Wait for ISR from USART1 DMA
+            // busy wait
         }
         ret = pdPASS;
     }
@@ -280,22 +282,35 @@ void FDLogFreeRTOSStateTask(void * arg)
     TaskStatus_t pxTaskStatusArray[NUM_TASKS_EXPECTED];
     unsigned long TotalRunTime, ulStatsAsPercentage;
     char tempBuffer[REPORTER_BUFFER_LEN];
+    shared_uptime uptime;
     
     (void)arg;
+
+    vTaskDelay(100);
     while(1)
     {
         assert_param(FLAG_HAS(log_data.state, RTOS_INITIALIZED));
+
+        if (uptime_get(&uptime) == pdPASS)
+        {
+            if (uptime.high > 0)
+            {
+                sprintf(tempBuffer, "Uptime: %lu%lu sec\r\n", uptime.high, uptime.low);
+            }
+            else
+            {
+                sprintf(tempBuffer, "Uptime: %lu sec\r\n", uptime.low);
+            }
+            FDSendLog((const uint8_t *)tempBuffer, strlen(tempBuffer), 0, 0);
+        }
 
         numTasks = uxTaskGetSystemState(pxTaskStatusArray, 
                                         NUM_TASKS_EXPECTED,
                                         &TotalRunTime);
 
-        sprintf(tempBuffer, "Total runtime: %lu ms\r\n", TotalRunTime);
-
         // for percent calculation
         TotalRunTime /= 100UL;
 
-        FDSendLog((const uint8_t *)tempBuffer, strlen(tempBuffer), 0, 0);
         FDSendLog((const uint8_t *)delimeter, strlen(delimeter), 0, 0);
         FDSendLog((const uint8_t *)header, strlen(header), 0, 0);
         FDSendLog((const uint8_t *)delimeter, strlen(delimeter), 0, 0);
